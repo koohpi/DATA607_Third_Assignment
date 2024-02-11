@@ -1,0 +1,557 @@
+---
+title: "String_Manip_&_Date_Processing"
+author: "TT"
+date: "9/14/2019"
+output: html_document
+---
+
+## A. Working with Strings
+
+### Regular expressions
+
+```{r}
+fruits <- c('Apple', 'Banana', 'Orange', 'Grape', 'Pineapple', 'Kiwi', 'Peach', 'Mango', 'Strawberry', 'Guava', 'Cherry', 'Apple', 'banana')
+
+fruits =="Banana" #exact match
+```
+
+```{r}
+which(fruits == "Banana") #use which to get position
+#or
+fruits[fruits=="Banana"] #use follwoing to print it 
+```
+
+```{r}
+breakfast = c("Apple", "Banana", "Apple", "banana")
+fruits %in% breakfast 
+```
+
+```{r}
+match(breakfast, fruits) #notice that only the first match is returned
+```
+
+```{r}
+fruits == "bana" #how do we search for pattern?
+```
+
+*grep:* Identifying strings that match a particular criteria
+
+```{r}
+grep(pattern = 'bana', fruits, value = TRUE, ignore.case = TRUE)
+```
+
+*gsub:* Replacing instances of a string with another of your choosing
+
+```{r}
+gsub(pattern = "Ch", replacement = "B", fruits[11])
+```
+
+```{r}
+breakfast.ab = c("App", "bana") 
+pmatch(breakfast.ab, fruits) #notice that Apple is not unique so it won't work
+```
+
+```{r}
+grep("nana", fruits) #grep works but one pattern at a time
+```
+
+*gregexpr:* Identifying positions of a string of interest
+
+```{r}
+(positions_a <- gregexpr(pattern = "a", text = fruits, ignore.case = TRUE))
+```
+
+positions_a \### Paste
+
+Use seperators to combine strings with other characters or numbers
+
+```{r}
+paste("X", 1:5, sep = ".")
+```
+
+Use collapse to combine multiple string outputs together
+
+```{r}
+paste("X", 1:5, sep = ".", collapse = "")
+```
+
+paste0 is the same as paste with an empty seperator
+
+```{r}
+paste0("X", 1:5)
+```
+
+NOTE: paste0 does not have a "sep" option that can be modified by the user
+
+paste0("a", "b", sep = "c") == paste0("a", "b", "c")
+
+paste0(rep(c("A","C","G","T"), each=4), c("A","C","G","T"), collapse = "")
+
+### Extra material: Other string manipulations
+
+Changing the case of strings
+
+```{r}
+string1 <- 'Data Science'
+tolower(string1) 
+toupper(string1)
+```
+
+### Exercise 1: Exercise with Strings
+
+Create this string 'A&1B&2C&3' using a paste function
+
+```{r}
+paste(c("A","B","C"), 1:3, sep = "&", collapse = "")
+```
+
+## B. Working with Dates
+
+```{r}
+dates <- c('11/14/2011', '12/04/2012', '03/01/2013', '02/09/2019')
+class(dates)
+```
+
+```{r}
+real_dates <- as.Date(dates, format = '%m/%d/%Y')
+class(real_dates)
+```
+
+```{r}
+other_format <- format(real_dates, '%A %B %d, %Y')
+class(other_format)
+```
+
+For the codes used to identify and format dates:
+
+```{r}
+?strptime
+```
+
+Identifying how long ago dates occurred
+
+```{r}
+today <- Sys.Date()
+
+(dif <- today - real_dates)
+
+class(dif)
+```
+
+To make a difference in times with a particular time unit of interest use difftime
+
+```{r}
+difftime(today, real_dates, units = "hours")
+```
+
+### Extra Materials: Lubridate
+
+The lubridate package contains a powerful set of tools that can be used to extract and interact with dates.
+
+There are functions like *mdy* that allow for simpler extration of date information from strings.
+
+```{r}
+install.packages("lubridate")
+library(lubridate, quietly = TRUE)
+
+(lubri_dates <- mdy(dates))
+```
+
+Extracting specific date information from a date object
+
+```{r}
+year(lubri_dates)
+
+month(lubri_dates)
+
+day(lubri_dates)
+```
+
+### Exercise 2: Exercise with Dates
+
+a.  Take the following date (November 11, 2011) and turn it into a date vector in R
+b.  Display the date vector in the format (month.day.year')
+
+```{r Excersise with data}
+new_dates <- "November 11, 2011"
+#first method
+new_real_dates <- as.Date(new_dates, format = '%B %d, %Y')
+class(new_real_dates)
+#seccond method
+new_real_dates1 <- mdy(new_dates)
+class(new_real_dates1)
+```
+
+### More Exercise
+
+```{r from_base_R}
+txt <- c("arm","foot","lefroo", "bafoobar")
+if(length(i <- grep("foo", txt)))
+   cat("'foo' appears at least once in\n\t", txt, "\n")
+
+## Double all 'a' or 'b's;  "\" must be escaped, i.e., 'doubled'
+gsub("([ab])", "\\1_\\1_", "abc and ABC")
+
+txt <- c("The", "licenses", "for", "most", "software", "are",
+  "designed", "to", "take", "away", "your", "freedom",
+  "to", "share", "and", "change", "it.",
+  "", "By", "contrast,", "the", "GNU", "General", "Public", "License",
+  "is", "intended", "to", "guarantee", "your", "freedom", "to",
+  "share", "and", "change", "free", "software", "--",
+  "to", "make", "sure", "the", "software", "is",
+  "free", "for", "all", "its", "users")
+( i <- grep("[gu]", txt) ) # indices
+
+stopifnot( txt[i] == grep("[gu]", txt, value = TRUE) )
+
+## Note that for some implementations character ranges are
+## locale-dependent (but not currently).  Then [b-e] in locales such as
+## en_US may include B as the collation order is aAbBcCdDe ...
+(ot <- sub("[b-e]",".", txt))
+sub("[b-e]",".", txt) # sun doen not global substitution
+
+
+txt[ot != gsub("[b-e]",".", txt)]#- gsub does "global" substitution
+gsub("[b-e]",".", txt)
+txt[ot != sub("[b-e]",".", txt)]#- sub does not "global" substitution
+
+## In caseless matching, ranges include both cases:
+a <- grep("[b-e]", txt, value = TRUE)
+b <- grep("[b-e]", txt, ignore.case = TRUE, value = TRUE)
+setdiff(b, a)
+
+txt[gsub("g","#", txt) !=
+    gsub("g","#", txt, ignore.case = TRUE)] # the "G" words
+
+regexpr("en", txt)
+
+## trim trailing white space
+str <- "Now is the time      "
+sub(" +$", "", str)  ## spaces only
+ 
+## what is considered 'white space' depends on the locale.
+sub("[[:space:]]+$", "", str) ## white space, POSIX-style
+
+## what PCRE considered white space changed in version 8.34: see ?regex
+sub("\\s+$", "", str, perl = TRUE) ## PCRE-style white space
+
+## capitalizing
+txt <- "a test of capitalizing"
+gsub("(\\w)(\\w*)", "\\U\\1\\L\\2", txt, perl=TRUE)
+gsub("\\b(\\w)",    "\\U\\1",       txt, perl=TRUE)
+
+txt2 <- "useRs may fly into JFK or laGuardia"
+gsub("(\\w)(\\w*)(\\w)", "\\U\\1\\E\\2\\U\\3", txt2, perl=TRUE)
+sub("(\\w)(\\w*)(\\w)", "\\U\\1\\E\\2\\U\\3", txt2, perl=TRUE)
+
+## named capture
+notables <- c("  Ben Franklin and Jefferson Davis",
+              "\tMillard Fillmore")
+# name groups 'first' and 'last'
+name.rex <- "(?<first>[[:upper:]][[:lower:]]+) (?<last>[[:upper:]][[:lower:]]+)"
+(parsed <- regexpr(name.rex, notables, perl = TRUE))
+
+gregexpr(name.rex, notables, perl = TRUE)[[2]]
+
+parse.one <- function(res, result) {
+  m <- do.call(rbind, lapply(seq_along(res), function(i) {
+    if(result[i] == -1) return("")
+    st <- attr(result, "capture.start")[i, ]
+    substring(res[i], st, st + attr(result, "capture.length")[i, ] - 1)
+  }))
+  colnames(m) <- attr(result, "capture.names")
+  m
+}
+parse.one(notables, parsed)
+
+## Decompose a URL into its components.
+## Example by LT (http://www.cs.uiowa.edu/~luke/R/regexp.html).
+x <- "http://stat.umn.edu:80/xyz"
+m <- regexec("^(([^:]+)://)?([^:/]+)(:([0-9]+))?(/.*)", x)
+m
+
+regmatches(x, m)
+
+## Element 3 is the protocol, 4 is the host, 6 is the port, and 7
+## is the path.  We can use this to make a function for extracting the
+## parts of a URL:
+URL_parts <- function(x) {
+    m <- regexec("^(([^:]+)://)?([^:/]+)(:([0-9]+))?(/.*)", x)
+    parts <- do.call(rbind,
+                     lapply(regmatches(x, m), `[`, c(3L, 4L, 6L, 7L)))
+    colnames(parts) <- c("protocol","host","port","path")
+    parts
+}
+URL_parts(x)
+
+## gregexec() may match multiple times within a single string.
+pattern <- "([[:alpha:]]+)([[:digit:]]+)"
+s <- "Test: A1 BC23 DEF456"
+m <- gregexec(pattern, s)
+m
+
+regmatches(s, m)
+
+## Before gregexec() was implemented, one could emulate it by running
+## regexec() on the regmatches obtained via gregexpr().  E.g.:
+lapply(regmatches(s, gregexpr(pattern, s)),
+       function(e) regmatches(e, regexec(pattern, e)))
+
+```
+
+```{r}
+#instead of using R-base funtion stringr function from tidyverse can be used
+install.packages('stringr')
+library(stringr)
+str_view('Unicorns are so cute!', 's\\b')
+str_view('Unicorns are so cute!', 's\\B')
+
+#In the string Unicorns are so cute!, there are two instances of the letter s. Above, the first R regex pattern highlighted the first instance of the letter s (since it's followed by a space), while the second one – the second instance (since it's followed by another letter, not a word boundary).
+
+cat('Unicorns are\nso cute!')
+str_view('Unicorns are\nso cute!', '\\n')
+cat('Unicorns are\tso cute!')
+str_view('Unicorns are\tso cute!', '\\t')
+
+
+str_view('Unicorns are so cute!', '\\w')
+str_view('Unicorns are so cute!', '\\W')
+
+str_detect('Unicorns are so cute!', '\\d')
+
+str_view('Unicorns are so cute!', '[[:upper:]]')
+str_view('Unicorns are so cute!', '[[:lower:]]')
+
+str_detect('Unicorns are so cute!', '[[:digit:]]')
+str_extract_all('Unicorns are so cute!', '[[:punct:]]')
+
+str_view_all('Unicorns are so cute!', '[[:space:]]')
+
+str_view_all('Unicorns Are SOOO Cute!', '[O-V]')
+str_view_all('Unicorns Are SOOO Cute!', '[^O-V]')
+str_view_all('3.14159265359', '[0-2]')
+str_view_all('The number pi is equal to 3.14159265359', '[n2e9&]')
+
+str_extract('dog', 'dog\\d*')
+
+str_extract('12345', '\\d+')
+
+str_extract('12345', '\\d?')
+str_extract('12345', '\\d{3}')
+str_extract('12345', '\\d{7,}')
+str_extract('12345', '\\d{2,4}')
+str_view('stella won no wallets', '^s')
+str_view('stella won no wallets', 's$')
+
+str_view_all('Do not have 100$, have 100 friends', '\\$')
+
+str_view_all('road cocoa oasis oak boa coach', '\\boa')
+str_view_all('road cocoa oasis oak boa coach', 'oa\\b')
+str_view_all('road cocoa oasis oak boa coach', 'oa\\B')
+#Above, we matched the combination of letters oa:1st example – at the beginning of the words 2nd example – at the end of the words 3rd example – whenever it's followed by a word character (in our case – by a letter)
+
+str_view_all('coach koala board oak cocoa road boa load coat oasis boat', 'boa|coa')
+
+str_view_all('code rat coat cot cat', 'co|at')
+str_view_all('code rat coat cot cat', 'c(o|a)t')
+
+
+# Here's an example pattern that will find the movie Saw 4
+str_match(movie_titles, pattern = "Saw 4")
+
+# Match all sequels of the movie "Saw"
+str_match(movie_titles, pattern = "Saw .")
+
+# Match the letter K and three arbitrary characters
+str_match(movie_titles, pattern = "K...")
+
+# Detect whether the movie titles end with a full stop
+str_detect(movie_titles, pattern = "\\.")
+
+# List all movies that end with a space and a digit
+movie_titles[str_detect(movie_titles,
+  pattern = "\\s\\d$"
+)]
+
+# List all movies that contain "Grey" or "Gray"
+movie_titles[str_detect(movie_titles,
+  pattern = "Gr(e|a)y"
+)]
+
+# List all movies with strange characters (no word or space)
+movie_titles[str_detect(movie_titles,
+  pattern = "[^(\\w|\\s) ]"
+)]
+
+# This lists all movies with two or more digits in a row
+movie_titles[str_detect(
+  movie_titles,
+  pattern = "(\\w*|\\d*)\\d{2,}"
+)]
+
+# List just the first words of every movie title
+str_match(movie_titles, pattern = "\\w{1}")
+
+# Match everything that comes before "Knight"
+str_match(movie_titles, pattern = "\\w*Knight")
+
+# Match both Screen and Screens by making the last "s" optional
+str_match(lines, pattern = "Screens?")
+
+# Match a random amount of arbitrary characters, followed by a comma
+str_match(lines, pattern = ".*,")
+
+# Match the same pattern followed by a comma, but the "lazy" way
+str_match(lines, pattern = ".*?,")
+
+firstname <- "John"
+lastname <- "Doe"
+
+paste0(firstname, "'s last name is ", lastname, ".")
+
+# Create the same result as the paste above with glue
+glue("{firstname}'s last name is {lastname}.")
+
+# Create a temporary varible "n" and use it inside glue
+glue(
+  "The name {firstname} consists of {n} characters.",
+  n = nchar(firstname)
+)
+
+# Create two temporary variables "n" and "m" and use them
+glue(
+  "The data frame 'users' has {n} rows and {m} columns.",
+  n = nrow(users),
+  m = ncol(users)
+)
+
+# This lists the column names of the data frame users
+colnames(users)
+
+# Use them to create a sentence about the numbers of logins
+users %>% mutate(
+  n_logins = glue("{name} logged in {logins} times.")
+)
+
+fruits <- list("Apple", "Banana", "Cherries", "Dragon Fruit")
+
+# Use ", " as a separator and ", or " between the last fruits
+question <- glue(
+  "Which of these do you prefer: {answers}?",
+  answers = glue_collapse(
+    fruits,
+    sep = ", ",
+    last = ", or "
+  )
+)
+
+# Print question
+print(question)
+
+fruits <- list("Apple", "Banana", "Cherries", "Dragon Fruit")
+
+# Use ", " as a separator and ", or " between the last fruits
+question <- glue(
+  "Which of these do you prefer: {answers}?",
+  answers = glue_collapse(
+    fruits,
+    sep = ", ",
+    last = ", or "
+  )
+)
+
+# Print question
+print(question)
+
+# List colnames separated a comma and a white space
+glue_collapse(colnames(users), sep = ", ")
+
+# Use " and " as a separator for the last elements
+glue(
+  "Our users are called {names}.",
+  names = glue_collapse(users$name, sep = ", ", last = " and ")
+)
+
+# Use the same way to output also the "logins" of the users
+glue(
+  "Our users have logged in {logins} times.",
+  logins = glue_collapse(users$logins, sep = ", ", last = " and ")
+
+
+
+
+
+```
+
+### Some extra example from other resources
+
+```{r additional_examples, echo=TRUE}
+
+##1st we'll construct a vector of weekdays, repeated 10 times
+days <- rep(c("Monday", "Tuesday", "Wednesday","Thursday", "Friday", "Saturday", "Sunday"), 3) 
+
+##note that stringr also has a function called str_dup() which can be used to
+#replicate/duplicate string values.
+
+str_detect(days, "^[Ss]un.*") 
+#every 7th entry is a match
+#in this case, since Su appears uniquely for the Sunday entries, we could also
+#just use "Su" for the regexp
+
+identical(str_detect(days, "Su"), str_detect(days, "^[Ss]un.*"))
+#the main advantages of str_detect() are that the string is the 1st argument
+#(i.e. it is pipe friendly), and there many of the stringr functions also have a
+#"negate" option which allows you to look for non-matching entries instead of
+#matching entries, e.g.
+
+days %>% str_detect("Su", negate = T) #find non-matches instead of matches
+
+
+#str_which() returns the indices of matches for a regexp and returns a numeric #vector, i.e. it tells you which entries are matches.
+
+days%>%str_which("^M")  #  #indices of matching entries, in this case starting with a capital "M" (for "Monday")
+days %>% str_which("^M", negate = T) #indices of non-matching entries
+
+str_which(days, "(Monday|Tuesday)") #indices for entries containing either "Monday" or "Tuesday"
+
+#which entries contain an empty space (the "day off" ones)?
+
+str_which(days, "[:space:]{1}") #match entries containing a single {1} space [:space:]
+
+#str_locate() or str_locate_all() tell you the character positions the pattern #characters are found in. I haven’t needed to use them so far.
+
+days %>% str_locate("day") %>% head() #this tells us the starting and ending positions of the pattern "day" #only print the 1st 6 rows of the output
+
+
+x <- c("Bob Jones: 250-999-8888", "Emily Robins: 416-908-2004", 
+       "Roger Smith: 204-192-9879", "Lindsay Richards: 250-209-3047")
+
+#only returns the 1st name (the 1st match)
+str_extract(x, "[:alpha:]*") 
+#str_extract_all() returns both names (all matches), but gives you a list
+#(simplify = FALSE, the default) or matrix (simplify = TRUE)
+str_extract_all(x, "[:alpha:]{2,}", simplify = TRUE) 
+#here I used the {2, } quantifier for "2 or more" because the * quantifier
+#returns a bunch of empty strings as well.
+
+#alternatively, we could just pass a more complex regex to the pattern argument
+#of str_extract() to look for the 1st set of letters and 2nd set of letters with
+#a space between them
+
+str_extract(x, "[:alpha:]* [:alpha:]*")
+
+
+# Define your string
+mystring <- "[1] \"bell pepper\" \"bilberry\" \"blackberry\" \"blood orange\" [5] \"blueberry\" \"cantaloupe\" \"chili pepper\" \"cloudberry\" [9] \"elderberry\" \"lime\" \"lychee\" \"mulberry\" [13] \"olive\" \"salal berry\""
+
+# Define the regular expression pattern to match text inside quotation marks
+pattern <- '"([^"]+)"'
+
+# Use str_extract_all to find all matches and extract the text inside the quotation marks
+extracted_strings <- str_extract_all(mystring, pattern)[[1]]
+
+# Print the extracted strings
+print(extracted_strings)
+
+
+```

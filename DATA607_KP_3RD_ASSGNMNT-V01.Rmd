@@ -1,0 +1,204 @@
+---
+title: "DATA607_KP_3RD_ASSGNMNT"
+author: "Koohyar Pooladvand"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is a week 3 assignment, working with strings. The assignment has three different sections each will be presented below separately.
+
+1.  Using the 173 majors listed in fivethirtyeight.com’s College Majors dataset [<https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/>], provide code that identifies the majors that contain either "DATA" or "STATISTICS"
+
+2.  Write code that transforms the data from an unorganized format to an organized structure extracting meaningful information
+
+3.  Describe, in words, what these expressions will match.
+
+4.  Construct regular expressions to match words.
+
+## Code and assignment
+
+In the first section of the code like, I ensure all the relevant packages are installed and libraries are loaded.
+
+```{r, Code_initialization, echo=TRUE}
+required_packages <- c("RSQLite","devtools","tidyverse","DBI","dplyr","odbc","openintro","ggplot2","psych","reshape2","knitr","markdown","shiny","R.rsp","fivethirtyeight","RCurl", "stringr","readr","glue") # Specify packages
+
+not_installed <- required_packages[!(required_packages %in% installed.packages()[ , "Package"])]# Extract not installed packages
+if(length(not_installed)==0){
+  print("All required packages are installed")
+} else {
+  print(paste(length(not_installed), "package(s) had to be installed.")) # print the list of packages that need to be isstall
+  install.packages(not_installed)
+}
+
+
+
+```
+
+## #1 section of the 3rd week homework
+
+The goal is to download the 173 majors and list those that contain "DATA" or "STATISTICS". Like other code, the first goal is to load the data to R, since it is URL code, we will be using the relevant line of code has been used before.
+
+```{r Load_major_from_GitHub, echo=TRUE}
+#LaodData
+library('RCurl')
+#for downlaoding the CSV we need to use raw code, otherwise, we will not be able to doan the file correctly
+URL <- "https://raw.githubusercontent.com/fivethirtyeight/data/master/college-majors/majors-list.csv"
+URL_handle <- RCurl::getURL(URL)
+Major_data<-data.frame(read.csv(text=URL_handle, header=TRUE,sep=","))
+
+print("This is the size of the dataframen and let's take a look at its contents")
+#dim(Major_data)
+pillar::glimpse(Major_data)
+
+```
+
+After loading the data, we use code of strings like those have been shared to filter for "DATA" and "SCIENCE" as well s the ones that contain both.
+
+```{r find_string, echo=TRUE}
+
+#using basic function of R
+#search for data
+Contains_DATA_B <- grep(pattern = 'DATA', Major_data$Major, value = TRUE, ignore.case = TRUE)
+#search for Science
+Contains_STATISTICS_B <-grep(pattern = 'STATISTICS', Major_data$Major, value = TRUE, ignore.case = TRUE)
+
+#search for thsoe with either DATA or STATISTICS
+print("Here is the list of the majors that have either DATA or STATISTICS")
+Contains_DATA_STATISTICS<- grep(pattern='DATA|STATISTICS', Major_data$Major,value = TRUE, ignore.case = TRUE)
+print(Contains_DATA_STATISTICS)
+
+#since grep only check for the frist string, we need to create a loop to go thru the entire length of the majors 
+
+#using more adacned function of dplyr
+Contains_DATA<- dplyr::filter(Major_data, grepl('DATA',Major))
+Contains_STATISTICS<- dplyr::filter(Major_data, grepl('STATISTICS',Major))
+Contains_DATA_STATISTICSE<- dplyr::filter(Major_data, grepl('STATISTICS|DATA',Major))
+#Contains_DATA_STATISTICS<- dplyr::filter(Major_data, grepl('STATISTICS&DATA',Major))
+
+
+result_matrix <- data.frame(Sel_Majors=character())
+
+
+#pmatch('DATA', Major_data$Major, duplicates.ok = FALSE)
+```
+
+## #2 Text readout and organization
+
+the goal of this section is to write a code that transforms the data from an unorganized format to an organized structure extracting meaningful information. The example to be worked on it the following:
+
+Data to be transformed:
+
+[1] "bell pepper"  "bilberry"     "blackberry"   "blood orange"
+
+[5] "blueberry"    "cantaloupe"   "chili pepper" "cloudberry"  
+
+[9] "elderberry"   "lime"         "lychee"       "mulberry"    
+
+[13] "olive"        "salal berry"
+
+Into a format like this:
+
+c("bell pepper", "bilberry", "blackberry", "blood orange", "blueberry", "cantaloupe", "chili pepper", "cloudberry", "elderberry", "lime", "lychee", "mulberry", "olive", "salal berry")
+
+```{r read_out, echo=TRUE}
+
+#To make this excersise realsitic I entered all thoe in a text file and them will
+#read them into RStudio usin readLines 
+
+con <- file("Data/raw_data.txt","r", blocking = FALSE) #Define local connection to file in Data folder
+
+lines <- readLines(con, n= -1L, encoding="unknown", warn = TRUE, skipNul = FALSE) #read all lines 
+singleString <- paste(lines, collapse=" ")
+
+close(con) #close con
+lines
+
+#second way use readr cuntion from readr library 
+library(readr)
+mystring <- read_file("Data/raw_data.txt")
+mystring
+
+```
+
+### Manipulate the uploaded text
+
+In section of the code, I will be using regular expression to manipulate the data that are uplaoded.
+
+#### First solution
+
+```{r text_maniupulation_1, echo=TRUE}
+
+# Extract words between quotations using regular expressions
+words <- unlist(regmatches(lines, gregexpr('"([^"]*)"', lines)))
+#print the results all contents were seperated by only words between qoutations 
+print("Initial extracted words")
+print(words)
+
+#substitute the two qoutation 
+#'"([^"]+)"' matches anything between double quotes and excludes the quotes themselves. The \\1 in the gsub function replaces the matched pattern with just the content within the quotes.
+
+words <- gsub('"([^"]+)"', '\\1', words)
+
+print("Words after spaces and extra qoutatuons are removed")
+#Seperate all words 
+print(words)
+
+# Remove empty elements
+words <- words[words != ""]
+#Print the modified words
+print("Words after all empty cells are removed")
+print(words)
+
+#Prepared the text as ask to be printed out 
+#I will used glue from glue library to do the final print
+
+print("Here is the final results")
+glue::glue(
+  'c("{combined}")',
+  combined=glue::glue_collapse(
+    words,
+    sep='" ,"',
+    last=""
+  )
+)|>print()
+
+```
+
+## #3 Describe, in words, what these expressions will match
+
+-   (.)\\1\\1 :
+
+-   "(.)(.)\\\\2\\\\1"
+
+-   (..)\\1
+
+-   "(.).\\\\1.\\\\1"
+
+-   "(.)(.)(.).\*\\\\3\\\\2\\\\1"
+
+| Expression                                                | Explanation in words                                                                                                                                                                                                                        |
+|--------------|----------------------------------------------------------|
+| (.)\\1\\1                                                 | matches any sequence of three consecutive characters where the first and second characters are the same                                                                                                                                     |
+| "(.)(.)\\\\2\\\\1"                                        | matches any sequence of four characters where the 1st and 4th are the same, and the 2nd and 3rd are the                                                                                                                                     |
+| same but can be different or the same as the 1st and 4th. |                                                                                                                                                                                                                                             |
+| (..)\\1                                                   | matches any sequence of four characters where the first two characters are identical to the last two characters.                                                                                                                            |
+| "(.).\\\\1.\\\\1"                                         | matches any sequence of five characters where, and the 1st and 3rd are the same, the 2nd is any character, the 5th is the same as the first.                                                                                                |
+| "(.)(.)(.).\*\\\\3\\\\2\\\\1"                             | matches a sequence of characters that starts with any three characters, followed by any or not character, and finally ends with the same characters but reversely meaning from the third first characters toward the first first character. |
+
+: Described the expression in words
+
+## #4:Construct regular expressions to match words.
+
+| Explanation                                                                               | Regular expressions   |
+|------------------------------------------|------------------------------|
+| Start and end with the same character.                                                    | \^(.).\*\\1\$         |
+| Contain a repeated pair of letters (e.g. "church" contains "ch" repeated twice.)          | .\*(.{2}).\*\\1.\*    |
+| Contain one letter repeated in at least three places (e.g. "eleven" contains three "e"s.) | .\*(.).\*\\1.\*\\1.\* |
+
+: Construct regular expressions
