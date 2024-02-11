@@ -360,7 +360,7 @@ display: none;
 <div id="r-markdown" class="section level2">
 <h2>R Markdown</h2>
 <p>This is a week 3 assignment, working with strings. The assignment has
-three different sections each will be presented below separately.</p>
+four different sections each will be presented below separately.</p>
 <ol style="list-style-type: decimal">
 <li><p>Using the 173 majors listed in fivethirtyeight.com’s College
 Majors dataset [<a href="https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/" class="uri">https://fivethirtyeight.com/features/the-economic-guide-to-picking-a-college-major/</a>],
@@ -409,36 +409,40 @@ pillar::glimpse(Major_data)</code></pre>
 ## $ FOD1P          &lt;chr&gt; &quot;1100&quot;, &quot;1101&quot;, &quot;1102&quot;, &quot;1103&quot;, &quot;1104&quot;, &quot;1105&quot;, &quot;1106&quot;,…
 ## $ Major          &lt;chr&gt; &quot;GENERAL AGRICULTURE&quot;, &quot;AGRICULTURE PRODUCTION AND MANA…
 ## $ Major_Category &lt;chr&gt; &quot;Agriculture &amp; Natural Resources&quot;, &quot;Agriculture &amp; Natur…</code></pre>
-<p>After loading the data, we use code of strings like those have been
-shared to filter for “DATA” and “SCIENCE” as well s the ones that
-contain both.</p>
-<pre class="r"><code>#using basic function of R
+<p>After loading the data, we use code of strings like those that have
+been shared to filter for “DATA” and “STATISTICS” as well as the ones
+that contain both.</p>
+<pre class="r"><code>#using the basic function of R
 #search for data
 Contains_DATA_B &lt;- grep(pattern = &#39;DATA&#39;, Major_data$Major, value = TRUE, ignore.case = TRUE)
 #search for Science
 Contains_STATISTICS_B &lt;-grep(pattern = &#39;STATISTICS&#39;, Major_data$Major, value = TRUE, ignore.case = TRUE)
 
-#search for thsoe with either DATA or STATISTICS
+#search for those with either DATA or STATISTICS
 print(&quot;Here is the list of the majors that have either DATA or STATISTICS&quot;)</code></pre>
 <pre><code>## [1] &quot;Here is the list of the majors that have either DATA or STATISTICS&quot;</code></pre>
-<pre class="r"><code>Contains_DATA_STATISTICS&lt;- grep(pattern=&#39;DATA|STATISTICS&#39;, Major_data$Major,value = TRUE, ignore.case = TRUE)
-print(Contains_DATA_STATISTICS)</code></pre>
+<pre class="r"><code>Contains_DATA_STATISTICS_B&lt;- grep(pattern=&#39;DATA|STATISTICS&#39;, Major_data$Major,value = TRUE, ignore.case = TRUE)
+print(&quot;Result of the first way&quot;)</code></pre>
+<pre><code>## [1] &quot;Result of the first way&quot;</code></pre>
+<pre class="r"><code>print(Contains_DATA_STATISTICS_B)</code></pre>
 <pre><code>## [1] &quot;MANAGEMENT INFORMATION SYSTEMS AND STATISTICS&quot;
 ## [2] &quot;COMPUTER PROGRAMMING AND DATA PROCESSING&quot;     
 ## [3] &quot;STATISTICS AND DECISION SCIENCE&quot;</code></pre>
-<pre class="r"><code>#since grep only check for the frist string, we need to create a loop to go thru the entire length of the majors 
+<pre class="r"><code>#In addition to grep I also will use dplyr to do the same 
 
 #using more adacned function of dplyr
 Contains_DATA&lt;- dplyr::filter(Major_data, grepl(&#39;DATA&#39;,Major))
 Contains_STATISTICS&lt;- dplyr::filter(Major_data, grepl(&#39;STATISTICS&#39;,Major))
-Contains_DATA_STATISTICSE&lt;- dplyr::filter(Major_data, grepl(&#39;STATISTICS|DATA&#39;,Major))
+Contains_DATA_STATISTICS&lt;- dplyr::filter(Major_data, grepl(&#39;STATISTICS|DATA&#39;,Major))
 #Contains_DATA_STATISTICS&lt;- dplyr::filter(Major_data, grepl(&#39;STATISTICS&amp;DATA&#39;,Major))
 
-
-result_matrix &lt;- data.frame(Sel_Majors=character())
-
-
-#pmatch(&#39;DATA&#39;, Major_data$Major, duplicates.ok = FALSE)</code></pre>
+print(&quot;Result of the 2nd way using dplyr&quot;)</code></pre>
+<pre><code>## [1] &quot;Result of the 2nd way using dplyr&quot;</code></pre>
+<pre class="r"><code>print(Contains_DATA_STATISTICS)</code></pre>
+<pre><code>##   FOD1P                                         Major          Major_Category
+## 1  6212 MANAGEMENT INFORMATION SYSTEMS AND STATISTICS                Business
+## 2  2101      COMPUTER PROGRAMMING AND DATA PROCESSING Computers &amp; Mathematics
+## 3  3702               STATISTICS AND DECISION SCIENCE Computers &amp; Mathematics</code></pre>
 </div>
 <div id="text-readout-and-organization" class="section level2">
 <h2>#2 Text readout and organization</h2>
@@ -455,7 +459,7 @@ following:</p>
 <p>c(“bell pepper”, “bilberry”, “blackberry”, “blood orange”,
 “blueberry”, “cantaloupe”, “chili pepper”, “cloudberry”, “elderberry”,
 “lime”, “lychee”, “mulberry”, “olive”, “salal berry”)</p>
-<pre class="r"><code>#To make this excersise realsitic I entered all thoe in a text file and them will
+<pre class="r"><code>#To make this excersise realsitic I entered all those into a text file and them will
 #read them into RStudio usin readLines 
 
 con &lt;- file(&quot;Data/raw_data.txt&quot;,&quot;r&quot;, blocking = FALSE) #Define local connection to file in Data folder
@@ -560,24 +564,21 @@ and second characters are the same</td>
 <tr class="even">
 <td>“(.)(.)\\2\\1”</td>
 <td>matches any sequence of four characters where the 1st and 4th are
-the same, and the 2nd and 3rd are the</td>
+the same, and the 2nd and 3rd are the same but can be different or the
+same as the 1st and 4th.</td>
 </tr>
 <tr class="odd">
-<td>same but can be different or the same as the 1st and 4th.</td>
-<td></td>
-</tr>
-<tr class="even">
 <td>(..)\1</td>
 <td>matches any sequence of four characters where the first two
 characters are identical to the last two characters.</td>
 </tr>
-<tr class="odd">
+<tr class="even">
 <td>“(.).\\1.\\1”</td>
 <td>matches any sequence of five characters where, and the 1st and 3rd
 are the same, the 2nd is any character, the 5th is the same as the
 first.</td>
 </tr>
-<tr class="even">
+<tr class="odd">
 <td>“(.)(.)(.).*\\3\\2\\1”</td>
 <td>matches a sequence of characters that starts with any three
 characters, followed by any or not character, and finally ends with the
